@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  web:
+    # NB: To be used in $WEB_FULL_IMAGE_NAME like this
+    # export WEB_FULL_IMAGE_NAME="ghcr.io/wherejuly/web.imagetron:0.0.1-dev.1"
+    image: "${WEB_FULL_IMAGE_NAME}"
+
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=imagetron-traefik-network"
+        - "traefik.http.routers.web.rule=Host(`web.imagetron.kott.studio`)"
+        - "traefik.http.routers.web.entrypoints=websecure"
+        - "traefik.http.routers.web.tls.certresolver=myresolver"
+
+        # WARNING: Must have for Docker Swarm when put in deploy.labels
+        # WARNING: Port must match the port exposed by the image.
+        # NB: Cannot set it from env variable because the interpolation does not work in labels in Swarm.
+        - "traefik.http.services.web.loadbalancer.server.port=80"
+
+        # NB: Protected by basic auth same as traefik.devpgx.ru
+        - "traefik.http.middlewares.web-auth.basicauth.usersfile=/auth/traefik.passwords"
+
+        # Compress Middleware
+        - "traefik.http.middlewares.web-compress.compress=true"
+
+        # NB: Check to assign all the middlewares defined earlier.
+        - "traefik.http.routers.web.middlewares=web-auth,web-compress"
+
+    volumes:
+      # WARNING: Check the path is correct on server
+      - ../.host/auth/traefik.passwords:/auth/traefik.passwords
+
+    networks:
+      - imagetron-traefik-network
+
+networks:
+  imagetron-traefik-network:
+    external: true

@@ -1,0 +1,66 @@
+# IMPORTANT: Works only via `docker compose config` preparing the compose file first.
+# This is automated in `deploy.sh` script.
+
+services:
+  backend:
+    # NB: To be used in $BACKEND_FULL_IMAGE_NAME like this
+    # export BACKEND_FULL_IMAGE_NAME="ghcr.io/wherejuly/backend.imagetron:0.0.1-dev.1"
+    image: "${BACKEND_FULL_IMAGE_NAME}"
+    env_file:
+      # Provide container with environment variables at runtime
+      - ./backend.stage.env
+    volumes:
+      # WARNING: Create this host dir if does not exist
+      # NB: This is for database backup. The temporary solution, see readme in the folder.
+      # WRITE: Check if i need this folder and if the path on host correct
+      # - ../../../.host/backup:/backup
+
+      - sqlite-db-data:/usr/src/app/.database
+    networks:
+      - imagetron-traefik-network
+      - loki-network
+
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=imagetron-traefik-network"
+        - "traefik.http.routers.backend.rule=Host(`backend.imagetron.kott.studio`) && PathPrefix(`/api`)"
+        - "traefik.http.routers.backend.entrypoints=websecure"
+        - "traefik.http.routers.backend.tls.certresolver=myresolver"
+
+        # WARNING: Must have for Docker Swarm when put in deploy.labels
+        # WARNING: Port must match the one from UAS_PORT env under swarm as other apps take 8080.
+        # NB: Cannot set it from env variable because the interpolation does not work in labels in Swarm.
+        - "traefik.http.services.backend.loadbalancer.server.port=8080"
+
+        # CORS Headers Middleware
+        - "traefik.http.middlewares.cors-backend.headers.STSIncludeSubdomains=true"
+        - "traefik.http.middlewares.cors-backend.headers.STSPreload=true"
+        - "traefik.http.middlewares.cors-backend.headers.forcestsheader=true"
+        - "traefik.http.middlewares.cors-backend.headers.framedeny=true"
+        - "traefik.http.middlewares.cors-backend.headers.browserxssfilter=true"
+        - "traefik.http.middlewares.cors-backend.headers.contenttypenosniff=true"
+        - "traefik.http.middlewares.cors-backend.headers.accesscontrolallowmethods=GET,OPTIONS,POST,PUT,PATCH,DELETE"
+        - "traefik.http.middlewares.cors-backend.headers.accesscontrolallowheaders=*"
+        - "traefik.http.middlewares.cors-backend.headers.accesscontrolalloworiginlist=http://localhost:5173,https://web.imagetron.kott.studio"
+
+        # StripPrefix Middleware
+        - "traefik.http.middlewares.stripprefix-backend.stripprefix.prefixes=/api"
+        - "traefik.http.middlewares.stripprefix-backend.stripprefix.forceslash=false"
+
+        # Compress Middleware
+        - "traefik.http.middlewares.compress-backend.compress=true"
+
+        # Assign middlewares
+        - "traefik.http.routers.backend.middlewares=stripprefix-backend,cors-backend,compress-backend"
+
+networks:
+
+  imagetron-traefik-network:
+    external: true
+    
+  loki-network:
+    external: true
+
+volumes:
+  sqlite-db-data:

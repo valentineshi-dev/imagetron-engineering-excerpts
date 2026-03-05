@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  grafana:
+    image: grafana/grafana-enterprise
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_SECURITY_ADMIN_USER=val
+      - GF_SECURITY_ADMIN_PASSWORD=val      
+      - GF_SERVER_ROOT_URL=/grafana
+      - GF_SERVER_DOMAIN=traefik.imagetron.kott.studio
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=progressing-traefik-network"
+
+        - "traefik.http.routers.grafana.rule=Host(`traefik.imagetron.kott.studio`) && PathPrefix(`/grafana`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.tls.certresolver=myresolver"
+        # WARNING: Must have for Docker Swarm when put in deploy.labels
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+        # NB: Protected by basic auth same as traefik.devpgx.ru
+        - "traefik.http.routers.grafana.middlewares=auth"
+
+        - "traefik.http.middlewares.auth.basicauth.usersfile=/auth/traefik.passwords"
+
+    volumes:
+      - ../.host/auth/traefik.passwords:/auth/traefik.passwords
+      - grafana-storage:/var/lib/grafana      
+
+    networks:
+      - imagetron-traefik-network
+      
+volumes:
+  grafana-storage:
+    driver: local      
+    
+networks:
+  imagetron-traefik-network:
+    external: true

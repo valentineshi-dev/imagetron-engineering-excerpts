@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v2.11
+    command:
+      - "--log.level=info"
+      - "--api.insecure=false"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+
+      # NB: Monitoring
+      # - "--metrics.prometheus=true"
+
+      # WARNING: Must have for swarm mode
+      - "--providers.docker.swarmMode=true"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=valentineshi.dev@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/logs/traefik-web.log"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=imagetron-traefik-network"
+        # NB: @see https://doc.traefik.io/traefik/operations/dashboard/#dashboard-router-rule
+        - "traefik.http.routers.traefik.rule=Host(`traefik.imagetron.kott.studio`)"
+        - "traefik.http.routers.traefik.entrypoints=websecure"
+        - "traefik.http.routers.traefik.tls=true"
+        - "traefik.http.routers.traefik.tls.certresolver=myresolver"
+        - "traefik.http.routers.traefik.service=api@internal"
+
+        - "traefik.http.routers.traefik.middlewares=auth"
+        - "traefik.http.middlewares.auth.basicauth.usersfile=/auth/traefik.passwords"
+
+        # WARNING: Must have for Docker Swarm when put in deploy.labels
+        - "traefik.http.services.traefik.loadbalancer.server.port=443"
+
+    ports:
+      - "80:80" # NB: Let's Encrypt cannot create certificate w/o this.
+      - "443:443"
+      - "8080:8080" # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # WARNING: Create a traefik passwords when apply basic authentication
+      - ./.host/auth/traefik.passwords:/auth/traefik.passwords
+      # WARNING: Create a letsencrypt dir within the folder where the docker-compose file is
+      - ./.host/letsencrypt:/letsencrypt
+      # WARNING: Create this host dir if does not exist
+      - ./.host/traefik/logs:/logs
+    networks:
+      - imagetron-traefik-network
+
+networks:
+  # WARNING: All the services in swarm must be attached to this network
+  imagetron-traefik-network:
+    name: imagetron-traefik-network
+    driver: overlay

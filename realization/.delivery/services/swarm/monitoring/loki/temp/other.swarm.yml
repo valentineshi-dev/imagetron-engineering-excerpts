@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  loki:
+    image: grafana/loki:latest
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+      labels:
+        # Traefik v2 labels (for Swarm)
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik_net"
+        - "traefik.http.services.loki.loadbalancer.server.port=3100"
+        - "traefik.http.routers.loki.rule=Host(`loki.yourdomain.com`)"
+        - "traefik.http.routers.loki.entrypoints=websecure"
+        - "traefik.http.routers.loki.tls=true"
+        - "traefik.http.routers.loki.tls.certresolver=leresolver_http" # Use your cert resolver
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki_data:/loki # Persist Loki data
+    networks:
+      - traefik_net # For Traefik exposure
+      - loki_net # For internal services (future-proofing)
+
+networks:
+  traefik_net:
+    external: true # Assuming Traefik is on this network
+  loki_net:
+    driver: overlay # For Swarm internal communication
+
+volumes:
+  loki_data: # Persistent storage for Loki logs
+    driver: local
