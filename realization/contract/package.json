@@ -1,0 +1,78 @@
+{
+    "name": "@wherejuly/imagetron-backend-contract",
+    "version": "0.17.0",
+    "description": "The Imagetron Backend Contract",
+    "type": "module",
+    "license": "UNLICENSED",
+    "author": "valentineshi.dev@gmail.com",
+    "main": "./code/index.js",
+    "module": "./code/index.js",
+    "exports": {
+        ".": {
+            "import": "./code/index.js",
+            "types": "./code/index.d.ts"
+        },
+        "./definitions": "./definitions/imagetron-bundled.oas.json",
+        "./parameters": "./definitions/parameters.schema.json",
+        "./package.json": "./package.json"
+    },
+    "types": "./code/index.d.ts",
+    "engines": {
+        "node": ">=20.18.1",
+        "npm": ">=9.1.1"
+    },
+    "scripts": {
+        "postversion": "echo 'Running after version bump' && tsx .delivery/configuration/definitions/version.ts --oas src/definitions/imagetron.oas.json",
+        "mock:development:serve": "nodemon --config .delivery/configuration/nodemon.json",
+        "spec:bundle:development": "tsx .delivery/configuration/definitions/bundle.ts",
+        "documentation:preview:stoplight": "browser-sync start --config .delivery/configuration/documentation/bs-config.cjs",
+        "documentation:preview:scalar": "browser-sync start --config .delivery/configuration/documentation/bs-config.cjs scalar",
+        "code:build:outlets": "tsx ./.delivery/utils/generator/generate-contract-outlets.ts",
+        "spec:build:params": "tsx ./.delivery/utils/parameters-to-json-schema.ts",
+        "spec:validate": "swagger-cli validate --no-schema ./src/definitions/imagetron.oas.json",
+        "contract:build": "tsx .delivery/configuration/contract/build.ts",
+        "code:build": "tsc -p ./.delivery/configuration/tsconfig.json",
+        "types:build": "openapi-typescript ./.delivery/.builds/dist/definitions/imagetron-bundled.oas.json --enum true --dedupe-enums -o ./src/code/generated/imagetron-bundled.ts",
+        "test": "npm run check-types && vitest run --config tests/.config/vitest.config.ts",
+        "check-types": "tsc --noEmit --project .",
+        "contract:publish": "npm publish ./.delivery/.builds/dist"
+    },
+    "devDependencies": {
+        "@apidevtools/swagger-cli": "^4.0.4",
+        "@stoplight/prism-cli": "^5.12.0",
+        "@tsconfig/node20": "^20.1.4",
+        "@types/lodash.get": "^4.4.9",
+        "@types/lodash.isempty": "^4.4.9",
+        "@types/node": "^22.10.5",
+        "@types/traverse": "^0.6.37",
+        "browser-sync": "^3.0.3",
+        "chalk": "^5.4.1",
+        "copyfiles": "^2.4.1",
+        "handlebars": "^4.7.8",
+        "http-convenience-pack": "^0.9.1",
+        "lodash.get": "^4.4.2",
+        "lodash.isempty": "^4.4.0",
+        "mri": "^1.2.0",
+        "nodemon": "^3.1.9",
+        "oas-markdown-merger": "^0.11.0",
+        "openapi-jsonschema-parameters": "^12.1.3",
+        "openapi-types": "^12.1.3",
+        "openapi-typescript": "^7.6.0",
+        "path-to-regexp": "^8.2.0",
+        "rimraf": "^6.0.1",
+        "traverse": "^0.6.11",
+        "tsx": "^4.19.2",
+        "vitest": "^2.1.4"
+    },
+    "peerDependencies": {
+        "lodash.get": "^4.4.2",
+        "path-to-regexp": "^8.2.0"
+    },
+    "publishConfig": {
+        "@wherejuly:registry": "https://npm.pkg.github.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/WhereJuly/63-imagetron.git"
+    }
+}
