@@ -1,0 +1,54 @@
+{
+    "name": "@wherejuly/imagetron-shared",
+    "version": "0.16.0-dev.14",
+    "description": "Imagetron shared (front, back) functionality.",
+    "license": "UNLICENSED",
+    "author": "valentineshi.dev@gmail.com",
+    "type": "module",
+    "main": "./code/index.js",
+    "module": "./code/index.js",
+    "types": "./types/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./code/index.js",
+            "types": "./types/index.d.ts"
+        }
+    },
+    "scripts": {
+        "test:foundation": "npm run check-types && vitest run --config tests/foundation/.ancillary/config/vitest.config.ts",
+        "check-types": "npx tsc --noEmit --project .",
+        "package:build": "tsx .delivery/scripts/build.ts",
+        "lint": "npx eslint ./src",
+        "package:de-alias": "npx tsc-alias -p ./.delivery/configuration/tsconfig.json --verbose",
+        "package:bundle:copy": "cpy ./package.json ./.delivery/.builds/dist",
+        "package:pack": "cd ./.delivery/.builds/dist && npm pack",
+        "package:publish": "npm publish ./.delivery/.builds/dist"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/WhereJuly/63-imagetron.git"
+    },
+    "devDependencies": {
+        "@tsconfig/node20": "^20.1.4",
+        "@types/node": "^22.13.1",
+        "@vitest/coverage-v8": "^3.0.8",
+        "cpy-cli": "^5.0.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^9.19.0",
+        "rimraf": "^6.0.1",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.3",
+        "typescript-eslint": "^8.23.0",
+        "vitest": "^3.0.8"
+    },
+    "dependencies": {
+        "@wherejuly/imagetron-backend-contract": "^0.16.0-dev.14",
+        "emittery": "^1.1.0",
+        "http-convenience-pack": "^0.9.1",
+        "lodash.get": "^4.4.2",
+        "path-to-regexp": "^8.2.0"
+    },
+    "publishConfig": {
+        "@wherejuly:registry": "https://npm.pkg.github.com"
+    }
+}
