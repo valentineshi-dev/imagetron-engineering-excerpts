@@ -1,0 +1,6 @@
+{
+    "midjourney": {
+        "maximum_active_tasks": "${DOMAIN_MAXIMUM_ACTIVE_TASKS}|-int",
+        "fast_mode_threshold_percent": "${DOMAIN_FAST_MODE_THRESHOLD_PERCENT}|-int"
+    }
+}

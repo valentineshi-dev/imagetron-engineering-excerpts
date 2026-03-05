@@ -1,0 +1,17 @@
+{
+    "any": {
+        "customOptions": {
+            "strict": false,
+            "useDefaults": false,
+            "allErrors": false
+        },
+        "standalone": {
+            "strict": false,
+            "useDefaults": false,
+            "coerceTypes": "array",
+            "removeAdditional": true,
+            "addUsedSchema": false,
+            "allErrors": false
+        }
+    }
+}

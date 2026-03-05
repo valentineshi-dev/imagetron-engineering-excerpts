@@ -1,7 +1,9 @@
 # Imagetron Project Engineering Excerpts
 
 > [!IMPORTANT]
-> This repository contains my Imagetron project engineering excerpts for illustration purposes: models, contract, tests, code, CI/CD, IaC.
+> This repository contains my Imagetron project engineering excerpts: models, contract, tests, code, CI/CD, IaC.
+>
+> The repository contains only roughly 1/5 of the actual code for illustration purposes and for brevity.
 >
 > See the detailed review in the [Imagetron case study](https://valentineshi.dev/content/deliverables/K3aT7UX_RCC8ZO_fy9VinQ/ai-powered-image-generation-publication-system-imagetron) on my website.
 

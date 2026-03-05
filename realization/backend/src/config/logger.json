@@ -1,0 +1,29 @@
+{
+    "development": {
+        "level": "${LOG_LEVEL}",
+        "transport": {
+            "target": "pino-pretty",
+            "options": {
+                "translateTime": "yyyy-mm-dd HH:MM:ss Z",
+                "ignore": "pid,hostname"
+            }
+        }
+    },
+    "test": false,
+    "stage": {
+        "level": "${LOG_LEVEL}",
+        "transport": {
+            "target": "pino-loki",
+            "options": {
+                "batching": true,
+                "host": "http://loki:3100",
+                "labels": {
+                    "app": "${__PACKAGE_NAME__}",
+                    "version": "${__PACKAGE_VERSION__}",
+                    "environment": "${NODE_ENV}"
+                }
+            }
+        }
+    },
+    "production": true
+}

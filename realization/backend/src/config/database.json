@@ -1,0 +1,17 @@
+{
+    "development": {
+        "dbName": "${IMAGETRON_DB_NAME}",
+        "debug": "${MIKRO_ORM_DEBUG}"
+    },
+    "test": {
+        "dbName": ":memory:",
+        "debug": "${MIKRO_ORM_DEBUG}"
+    },
+    "stage": {
+        "dbName": "${IMAGETRON_DB_NAME}",
+        "debug": "${MIKRO_ORM_DEBUG}"
+    },
+    "production": {
+        "dbName": "${IMAGETRON_DB_NAME}"
+    }
+}
