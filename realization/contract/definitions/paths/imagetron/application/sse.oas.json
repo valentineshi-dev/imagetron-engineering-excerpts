@@ -1,0 +1,50 @@
+{
+  "get": {
+    "summary": "Application SSE",
+    "description": "{% merge './imagetron/application/sse.md' %}",
+    "operationId": "sse",
+    "tags": ["Application"],
+    "x-badges": [{ "label": "Badged Endpoint", "color": "blue" }],
+    "x-tag-expanded": true,
+    "parameters": [
+      {
+        "name": "token",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Successfully connected to the SSE stream",
+        "content": {
+          "text/event-stream": {
+            "schema": {
+              "type": "string",
+              "example": "event: connected\ndata: Connected\n\n"
+            }
+          }
+        }
+      },
+      "209": {
+        "description": "Actually does not respond with status code. The response is the stream of event to subscribers. The events are the [The Application Base Event](/#/schemas/application-event) object in form of [GoAPI Task Processed](/#/schemas/application-goapi-task-processed-event) event. The SSE end is denoted by '\\n\\n' (double new line sign).",
+        "content": {
+          "text/event-stream": {
+            "schema": {
+              "type": "string",
+              "format": "binary",
+              "examples": [": heartbeat\n\n", "event: application\ndata: <the actual application event>}\n\n"]
+            }
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "ImagetronAPIKeyAuth": []
+      }
+    ]
+  }
+}

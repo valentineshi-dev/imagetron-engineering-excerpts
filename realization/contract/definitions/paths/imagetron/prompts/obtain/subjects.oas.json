@@ -1,0 +1,70 @@
+{
+  "post": {
+    "summary": "Obtain Prompt Subjects",
+    "description": "{% merge './imagetron/prompts/obtain-prompt-subjects.md' %}",
+    "operationId": "obtainPromptSubjectsInChat",
+    "tags": ["Prompts"],
+    "x-badges": [{ "label": "Badged Endpoint", "color": "blue" }],
+    "x-tag-expanded": true,
+    "requestBody": {
+      "description": "The Artist's new chat input",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["content"],
+            "properties": {
+              "content": {
+                "description": "The input content for ChatGPT.",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Successfully get the input answered by ChatGPT, saved in history.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["history"],
+              "properties": {
+                "history": {
+                  "type": "array",
+                  "description": "The `ObtainPromptSubjectsChatHistoryCollection` [items](/#/schemas/prompts-chatgpt-message-item) history arrays including the latest chat input and the response from ChatGPT.",
+                  "items": {
+                    "$ref": "#/components/schemas/prompts-chatgpt-message-item"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "424": {
+        "description": "The dependent ChatGPT endpoint returned the unexpected unsuccessful response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/prompts-chatgpt-unexpected-failure-response"
+            }
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "ImagetronAPIKeyAuth": []
+      }
+    ]
+  },
+  "components": {
+    "$ref": "../../../../components/components.oas.json#/components"
+  },
+  "fields": {
+    "$ref": "../../../../partials/fields.oas.json#/fields"
+  }
+}

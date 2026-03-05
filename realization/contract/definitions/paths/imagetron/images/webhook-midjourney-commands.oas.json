@@ -1,0 +1,70 @@
+{
+  "post": {
+    "summary": "[WEBHOOK] Handle the GoAPI Midjourney Command Task Results",
+    "description": "{% merge './imagetron/images/webhook-midjourney-commands.md' %}",
+    "operationId": "webhookHandleMidjourneyCommandTaskResults",
+    "tags": ["[Midjourney] Images"],
+    "x-badges": [{ "label": "Badged Endpoint", "color": "blue" }],
+    "x-tag-expanded": true,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/uuid-in-path",
+        "description": "The UUID of the prompt to generate the images for.",
+        "name": "uuid"
+      },
+      {
+        "name": "command",
+        "in": "path",
+        "description": "MidJourney command to execute",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/images-midjourney-commands"
+        }
+      }
+    ],
+    "requestBody": {
+      "description": "The `imagine` task completion data.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "required": ["timestamp", "data"],
+            "properties": {
+              "timestamp": {
+                "$ref": "#/fields/timestamp",
+                "description": "Timestamp of the task completion. Must [discard](https://goapi.ai/docs/unified-api-webhook#webhook-retries) the requests with timestamp older than 5 seconds."
+              },
+              "data": {
+                "$ref": "#/components/schemas/goapi-unified-task-result-data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "The webhook received final payload and passed it for further processing."
+      },
+      "202": {
+        "description": "The webhook understands the request is a progress update request. No further processing expected."
+      },
+      "400": {
+        "description": "The webhook payload is of unexpected data structure."
+      },
+      "401": {
+        "description": "Unauthorized."
+      }
+    },
+    "security": [
+      {
+        "ImagetronAPIKeyAuth": []
+      }
+    ]
+  },
+  "components": {
+    "$ref": "../../../components/components.oas.json#/components"
+  },
+  "fields": {
+    "$ref": "../../../partials/fields.oas.json#/fields"
+  }
+}

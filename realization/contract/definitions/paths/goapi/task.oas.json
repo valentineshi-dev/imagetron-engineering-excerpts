@@ -1,0 +1,95 @@
+{
+  "servers": [
+    {
+      "url": "https://api.goapi.ai",
+      "description": "GoAPI Production Server"
+    }
+  ],
+  "post": {
+    "summary": "[External] GoAPI Task Endpoint",
+    "description": "The endpoint to accommodate different tasks of Midjourney.\n\r**Not part of Imagetron Backend API.** Is here only for convenience as original GoAPI docs are quite poorly organized and hence difficult to use.",
+    "operationId": "goAPITask",
+    "tags": ["GoAPI"],
+    "x-badges": [{ "label": "Badged Endpoint", "color": "blue" }],
+    "x-tag-expanded": true,
+    "requestBody": {
+      "description": "The Midjourney task with parameters depending on `task_type` property value.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/goapi-task-request-base"
+              },
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/goapi-imagine-task-request-partial",
+                    "title": "Midjourney 'imagine' task request payload"
+                  },
+                  {
+                    "$ref": "#/components/schemas/goapi-reroll-task-request-partial",
+                    "title": "Midjourney 'reroll' task request partial"
+                  },
+                  {
+                    "$ref": "#/components/schemas/goapi-variations-task-request-partial",
+                    "title": "Midjourney 'variations' task request payload"
+                  },
+                  {
+                    "$ref": "#/components/schemas/goapi-upscale-task-request-partial",
+                    "title": "Midjourney 'upscale' task request payload"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "task_type"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "The task was taken for processing. See the response for more details.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/goapi-unified-task-response"
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad request. May contain the `message` field with the error reason. Similar to error `500` as well."
+      },
+      "401": {
+        "description": "Unauthorized. [TBC] w/practice. May contain the `message` field with the error reason. Similar to error `500` as well."
+      },
+      "500": {
+        "description": "Some error occurred during the task processing. May (depends on `message` field) denote an attempt to put more than 50 + 'concurrent' number of tasks in a task queue.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "description": "A message stating that you cannot submit more than 59 jobs. ",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "GoAPIKeyAuth": []
+      }
+    ]
+  },
+  "components": {
+    "$ref": "../../components/components.oas.json#/components"
+  }
+}

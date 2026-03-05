@@ -1,0 +1,112 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "0.17.0",
+    "title": "Imagetron Backend Contract",
+    "description": "{% merge './general.md' %}"
+  },
+  "security": [
+    {
+      "GoAPIKeyAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://127.0.0.1:4010",
+      "description": "Local mock server"
+    },
+    {
+      "url": "http://127.0.0.1:3000",
+      "description": "Development implementation server (local)"
+    },
+    {
+      "url": "https://backend.imagetron.kott.studio",
+      "description": "Stage / Production Server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "$ref": "./paths/imagetron/root.oas.json"
+    },
+    "/application/sse": {
+      "$ref": "./paths/imagetron/application/sse.oas.json"
+    },
+    "/prompts/subjects/obtain": {
+      "$ref": "./paths/imagetron/prompts/obtain/subjects.oas.json"
+    },
+    "/prompts/prompts/obtain": {
+      "$ref": "./paths/imagetron/prompts/obtain/prompts.oas.json"
+    },
+    "/prompts/subjects/chat/retrieve": {
+      "$ref": "./paths/imagetron/prompts/chat/retrieve.oas.json"
+    },
+    "/prompts/subjects/chat/remove": {
+      "$ref": "./paths/imagetron/prompts/chat/remove.oas.json"
+    },
+    "/prompts/list/retrieve": {
+      "$ref": "./paths/imagetron/prompts/misc/list-retrieve.oas.json"
+    },
+    "/prompts/prompt/{uuid}/remove": {
+      "$ref": "./paths/imagetron/prompts/misc/prompt-remove.oas.json"
+    },
+    "/prompts/prompt/{uuid}/retrieve": {
+      "$ref": "./paths/imagetron/prompts/misc/prompt-retrieve.oas.json"
+    },
+    "/prompts/prompt/{uuid}/title/obtain": {
+      "$ref": "./paths/imagetron/prompts/misc/prompt-title-obtain.oas.json"
+    },
+    "/prompts/prompt/{uuid}/status/{manual}": {
+      "$ref": "./paths/imagetron/prompts/misc/prompt-manual-status-change.oas.json"
+    },
+    "/images/prompt/{uuid}/midjourney/imagine": {
+      "$ref": "./paths/imagetron/images/imagine-midjourney.oas.json"
+    },
+    "/images/prompt/{uuid}/midjourney/reroll": {
+      "$ref": "./paths/imagetron/images/reroll-midjourney.oas.json"
+    },
+    "/images/prompt/{prompt_uuid}/midjourney/task/{task_uuid}/variations/{choice}": {
+      "$ref": "./paths/imagetron/images/variations-midjourney.oas.json"
+    },
+    "/images/prompt/{prompt_uuid}/midjourney/task/{task_uuid}/upscale/{choice}": {
+      "$ref": "./paths/imagetron/images/upscale-midjourney.oas.json"
+    },
+    "/webhooks/images/goapi/prompt/{uuid}/midjourney/{command}": {
+      "$ref": "./paths/imagetron/images/webhook-midjourney-commands.oas.json"
+    },
+    "/images/prompt/{uuid}/retrieve/list": {
+      "$ref": "./paths/imagetron/images/images-retrieve-list.oas.json"
+    },
+    "/api/v1/task": {
+      "$ref": "./paths/goapi/task.oas.json"
+    }
+  },
+  "tags": [
+    {
+      "name": "System",
+      "description": "System operations."
+    },
+    {
+      "name": "Application",
+      "description": "Application operations."
+    },
+    {
+      "name": "Prompts",
+      "description": "Operations for prompts management."
+    },
+    {
+      "name": "[Midjourney] Images",
+      "description": "Operations for Midjourney images generation and management."
+    },
+    {
+      "name": "Images",
+      "description": "Operations for generated images."
+    },
+    {
+      "name": "GoAPI",
+      "description": "The GoAPI endpoints documentation."
+    }
+  ],
+  "components": {
+    "$ref": "./components/components.oas.json#/components"
+  }
+}

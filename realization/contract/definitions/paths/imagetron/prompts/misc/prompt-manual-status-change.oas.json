@@ -1,0 +1,101 @@
+{
+  "post": {
+    "summary": "Set Prompt Manual Status",
+    "description": "{% merge './imagetron/prompts/change-image-prompt-manual-status.md' %}",
+    "operationId": "setPromptManualStatus",
+    "tags": ["Prompts"],
+    "x-badges": [{ "label": "Badged Endpoint", "color": "blue" }],
+    "x-tag-expanded": true,
+    "parameters": [
+      {
+        "name": "uuid",
+        "description": "The prompt UUID",
+        "required": true,
+        "in": "path",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      {
+        "name": "manual",
+        "description": "The prompt manual status to change to",
+        "required": true,
+        "in": "path",
+        "schema": {
+          "type": "string",
+          "enum": ["uploading", "finished"],
+          "x-enum-varnames": ["Uploading", "Finished"]
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "The image prompt status is successfully changed.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "description": "The updated [Image Prompt](/#/schemas/prompts-image-prompt) with the new title.",
+              "$ref": "#/components/schemas/prompts-image-prompt"
+            }
+          }
+        }
+      },
+      "400": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/fastify-error-400"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "The prompt with the given UUID is not found.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["message"],
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "`The prompt with UUID <actual-uuid-here> is not found in the persistence."
+                }
+              }
+            }
+          }
+        }
+      },
+      "409": {
+        "description": "Invalid status transition.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "description": "The error response reflecting what state transition was invalid.",
+              "type": "object",
+              "required": ["message"],
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "The given status is not a valid transition target from the current status (`upscale:await`->`finished` not allowed)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "ImagetronAPIKeyAuth": []
+      }
+    ]
+  },
+  "components": {
+    "$ref": "../../../../components/components.oas.json#/components"
+  },
+  "fields": {
+    "$ref": "../../../../partials/fields.oas.json#/fields"
+  }
+}

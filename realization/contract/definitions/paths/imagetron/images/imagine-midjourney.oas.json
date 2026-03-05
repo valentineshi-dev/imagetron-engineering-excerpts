@@ -1,0 +1,107 @@
+{
+  "post": {
+    "summary": "Run '/imagine' Command",
+    "description": "{% merge './imagetron/images/imagine.md' %}",
+    "operationId": "runMidjourneyImagineCommand",
+    "tags": ["[Midjourney] Images"],
+    "x-badges": [{ "label": "Badged Endpoint", "color": "blue" }],
+    "x-tag-expanded": true,
+    "parameters": [
+      {
+        "$ref": "#/components/parameters/uuid-in-path",
+        "description": "The UUID of the prompt to generate the images for.",
+        "name": "uuid"
+      }
+    ],
+    "responses": {
+      "201": {
+        "description": "The `/imagine` command has successfully started.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["prompt"],
+              "properties": {
+                "prompt": {
+                  "$ref": "#/components/schemas/prompts-image-prompt",
+                  "description": "The prompt with the state updated as the result of the command start"
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "The prompt with the given UUID was not found."
+      },
+      "409": {
+        "description": "The structured error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/domain-error-response"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "description": "Limited set of enums valid for this case is presented as examples. The actual enums subset cannot be presented due to the duplicated enum definition clashes at `openapi-typescript`.",
+                      "examples": ["ACTIVE_TASK_QUEUE_IS_FULL", "INVALID_PROMPT_STATUS_TRANSITION", "MIDJOURNEY_COMMAND_NOT_ALLOWED"]
+                    },
+                    "metadata": {
+                      "type": "null"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "424": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/domain-error-response"
+                },
+                {
+                  "type": "object",
+                  "description": "[WARNING] The content is based on the assumed GoAPI error and `status==failure` response shape. Will have to revise when actually integrate with GoAPI.",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "A message describing the error. The examples are not processed correctly so the actual message is `GoAPI request returned unexpected error response` and `GoAPI request returned 200 with 'data.status=='failure'`.",
+                      "examples": ["GoAPI request returned unexpected error response"]
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["GOAPI_UNEXPECTED_FAILURE", "GOAPI_TASK_FAILURE"]
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/goapi-unexpected-failure-response"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "security": [
+      {
+        "ImagetronAPIKeyAuth": []
+      }
+    ]
+  },
+  "components": {
+    "$ref": "../../../components/components.oas.json#/components"
+  },
+  "fields": {
+    "$ref": "../../../partials/fields.oas.json#/fields"
+  }
+}
