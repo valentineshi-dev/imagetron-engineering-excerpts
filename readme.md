@@ -5,6 +5,8 @@
 >
 > The repository contains only roughly 1/5 of the actual code for illustration purposes and for brevity.
 >
+> All files are included as excerpts from the original repository to illustrate engineering thinking, application structure, CI, and delivery practices. Paths may not match the structure of this excerpt repository.
+>
 > See the detailed review in the [Imagetron case study](https://valentineshi.dev/content/deliverables/K3aT7UX_RCC8ZO_fy9VinQ/ai-powered-image-generation-publication-system-imagetron) on my website.
 
 ## System characteristics
