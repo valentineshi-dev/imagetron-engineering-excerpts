@@ -1,0 +1,93 @@
+# INFO: Build and deliver the docker image. Update the `backend.stage.env` file on the stage server.
+name: Deliver Imagetron Backend Application Image
+# run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+
+on:
+  workflow_dispatch: # This is to manually run the CI
+  push:
+    branches:
+      # - never # Skip the workflow for debugging purposes;
+      # - icicdr/imagetron/release-iac
+      - develop # So far build the image from develop branch;
+      # - master
+    paths:
+      - ".github/workflows/backend.ci.yml"
+      - "packages/backend/implementation/src"
+      - "packages/backend/implementation/tests"
+      - "packages/backend/implementation/tests/.ancillary"
+      - "packages/backend/implementation/package*.json"
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DOCKER_IMAGE_NAME: wherejuly/backend.imagetron
+
+jobs:
+  deliver:
+    runs-on: ubuntu-22.04
+    env:
+      GITHUB_AUTH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }} # NB: Cannot use 'GITHUB_' prefix
+      NODE_ENV: stage
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - run: echo "Checking out the repository"
+      - name: "Check out the repository '${{ github.repository }}' code at branch '${{ github.ref }}'"
+        uses: actions/checkout@v4
+
+      # Make the othentic image registry available.
+      - name: Log in to the Container registry
+        # if: false # NB: example to skip a step
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ env.GITHUB_AUTH_TOKEN }}
+
+      - name: Run the tests before building
+        working-directory: ./packages/backend/implementation
+        env:
+          NODE_ENV: test
+        run: |
+          npm install
+          echo "${{ secrets.BACKEND_TESTS_ENV }}" > .env.test
+          npm run test:foundation
+
+      - name: Build the docker image
+        working-directory: ./packages/backend/implementation
+        run: |
+          # printenv | sort | awk -F= '{printf "%s=%s\n", $1, $2}'
+          export VERSION=$(jq -r '.version' package.json)
+          echo "${{ secrets.BACKEND_ENV_STAGE }}" > .env
+          ls -la
+          cat .env
+          docker build -t ${REGISTRY}/${DOCKER_IMAGE_NAME}:${VERSION} \
+            -f .delivery/configuration/application/docker/backend.dockerfile \
+            --build-arg GITHUB_AUTH_TOKEN=$GITHUB_AUTH_TOKEN .
+          docker image ls
+
+      - name: Log in to the Container registry
+        # if: github.ref == 'refs/heads/main' # NB: skip step
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ env.GITHUB_AUTH_TOKEN }}
+
+      - name: Deploy the image to the registry
+        # if: github.ref == 'refs/heads/main' # NB: skip step
+        working-directory: ./packages/backend/implementation
+        run: |
+          export VERSION=$(jq -r '.version' package.json)
+          docker image ls -a
+          docker push ${REGISTRY}/${DOCKER_IMAGE_NAME}:${VERSION}
+          ls -la
+
+      - name: Create backend.stage.env on remote server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGE_SERVER_IP }}
+          username: ${{ secrets.STAGE_SERVER_USER }}
+          key: ${{ secrets.STAGE_SERVER_SSH_PRIVATE_KEY }}
+          script: |
+            echo "${{ secrets.BACKEND_STAGE_ENV }}" > ~/applications/imagetron/iac/services/application/backend.stage.env

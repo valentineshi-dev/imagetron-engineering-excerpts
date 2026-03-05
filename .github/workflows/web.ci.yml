@@ -1,0 +1,71 @@
+name: Deliver Imagetron Web Application Image
+# run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+
+on:
+  workflow_dispatch: # This is to manually run the CI
+  push:
+    branches:
+      # - never # Skip the workflow for debugging purposes;
+      # - icicdr/imagetron/release-iac
+      - develop # So far build the image from develop branch;
+      # - master
+    paths:
+      - ".github/workflows/web.ci.yml"
+      - "packages/frontend/web/src"
+      - "packages/frontend/web/package*.json"
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DOCKER_IMAGE_NAME: wherejuly/web.imagetron
+
+jobs:
+  deliver:
+    runs-on: ubuntu-22.04
+    env:
+      GITHUB_AUTH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }} # NB: Cannot use 'GITHUB_' prefix
+      NODE_ENV: stage
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - run: echo "Checking out the repository"
+      - name: "Check out the repository '${{ github.repository }}' code at branch '${{ github.ref }}'"
+        uses: actions/checkout@v4
+
+      # Make the othentic image registry available.
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ env.GITHUB_AUTH_TOKEN }}
+
+      - name: Build the docker image
+        working-directory: ./packages/frontend/web
+        run: |
+          # printenv | sort | awk -F= '{printf "%s=%s\n", $1, $2}'
+          export VERSION=$(jq -r '.version' package.json)
+          echo "${{ secrets.WEB_ENV_STAGE }}" > .env
+          ls -la
+          cat .env
+          docker build -t ${REGISTRY}/${DOCKER_IMAGE_NAME}:${VERSION} \
+            -f .delivery/configuration/application/docker/web.dockerfile \
+            --build-arg GITHUB_AUTH_TOKEN=$GITHUB_AUTH_TOKEN .
+          docker image ls
+
+      - name: Log in to the Container registry
+        # if: github.ref == 'refs/heads/main' # NB: skip step
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ env.GITHUB_AUTH_TOKEN }}
+
+      - name: Deploy the image to the registry
+        # if: github.ref == 'refs/heads/main' # NB: skip step
+        working-directory: ./packages/frontend/web
+        run: |
+          export VERSION=$(jq -r '.version' package.json)
+          docker image ls -a
+          docker push ${REGISTRY}/${DOCKER_IMAGE_NAME}:${VERSION}
+          ls -la
