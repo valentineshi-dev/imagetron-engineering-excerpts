@@ -1,0 +1,112 @@
+{
+  "components": {
+    "securitySchemes": {
+      "GoAPIKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "The GoAPI API key to authenticate the API request."
+      },
+      "ImagetronAPIKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "{% merge './webhook-api-key-auth.md' %}\n\r"
+      }
+    },
+    "parameters": {
+      "uuid-in-path": {
+        "name": "uuid",
+        "required": true,
+        "in": "path",
+        "$ref": "#/fields/uuid"
+      }
+    },
+    "schemas": {
+      "prompts-chatgpt-completions-request": {
+        "$ref": "../partials/prompts/objects/prompts-chatgpt-completions-request.oas.json#/request"
+      },
+      "prompts-chatgpt-message-item": {
+        "$ref": "../partials/prompts/objects/prompts-chatgpt-message-item.oas.json#/item"
+      },
+      "prompts-chatgpt-unexpected-failure-response": {
+        "$ref": "../partials/prompts/objects/prompts-chatgpt-unexpected-failure-response.oas.json#/response"
+      },
+      "prompts-chatgpt-image-prompt-response-item": {
+        "$ref": "../partials/prompts/objects/prompts-chatgpt-image-prompt-response-item.oas.json#/item"
+      },
+      "prompts-image-prompt": {
+        "$ref": "../partials/prompts/objects/prompts-image-prompt.oas.json#/prompt"
+      },
+      "prompts-image-prompt-status": {
+        "$ref": "../partials/prompts/objects/prompts-image-prompt-status.oas.json#/status"
+      },
+      "images-midjourney-commands": {
+        "$ref": "#/fields/images-midjourney-commands"
+      },
+      "goapi-task-request-base": {
+        "$ref": "./../paths/goapi/objects/tasks/task-request-base.oas.json#/base"
+      },
+      "goapi-imagine-task-request-partial": {
+        "$ref": "./../paths/goapi/objects/tasks/imagine-task-request-partial.oas.json#/partial"
+      },
+      "goapi-reroll-task-request-partial": {
+        "$ref": "./../paths/goapi/objects/tasks/reroll-task-request-partial.oas.json#/partial"
+      },
+      "goapi-variations-task-request-partial": {
+        "$ref": "./../paths/goapi/objects/tasks/variations-task-request-partial.oas.json#/partial"
+      },
+      "goapi-upscale-task-request-partial": {
+        "$ref": "./../paths/goapi/objects/tasks/upscale-task-request-payload.oas.json#/payload"
+      },
+      "goapi-unified-task-response": {
+        "$ref": "./../paths/goapi/objects/unified-task-response.oas.json#/response"
+      },
+      "goapi-unified-task-result-data": {
+        "$ref": "./../paths/goapi/objects/unified-task-result-data.oas.json#/data"
+      },
+      "goapi-unified-config": {
+        "$ref": "./../paths/goapi/objects/config.oas.json#/config"
+      },
+      "goapi-unexpected-failure-response": {
+        "$ref": "./../paths/goapi/objects/unexpected-failure-response.oas.json#/response"
+      },
+      "goapi-task-type": {
+        "$ref": "./../paths/goapi/fields.oas.json#/task_type"
+      },
+      "goapi-variation-index": {
+        "$ref": "./../paths/goapi/fields.oas.json#/variation-index"
+      },
+      "goapi-upscale-index": {
+        "$ref": "./../paths/goapi/fields.oas.json#/upscale-index"
+      },
+      "goapi-task-result-status-enum": {
+        "$ref": "./../paths/goapi/objects/task-result-status-enum.oas.json#/status"
+      },
+      "images-image-item": {
+        "$ref": "../partials/images/images-image-item.oas.json#/item"
+      },
+      "fastify-error-400": {
+        "$ref": "./../partials/fastify/fastify-errors.oas.json#/400"
+      },
+      "application-event": {
+        "$ref": "../partials/application/application-event.oas.json#/schemas/base-event"
+      },
+      "application-goapi-task-returned-event": {
+        "$ref": "../partials/application/application-event.oas.json#/schemas/goapi-task-returned"
+      },
+      "application-goapi-task-processed-event": {
+        "$ref": "../partials/application/application-event.oas.json#/schemas/goapi-task-processed"
+      },
+      "application-generic-uuid": {
+        "$ref": "#/fields/uuid"
+      },
+      "domain-error-response": {
+        "$ref": "./../partials/domain/domain-error-response.oas.json#/response"
+      }
+    }
+  },
+  "fields": {
+    "$ref": "../partials/fields.oas.json#/fields"
+  }
+}

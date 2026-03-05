@@ -1,0 +1,83 @@
+{
+  "schemas": {
+    "base-event": {
+      "title": "[Application] Base Event",
+      "description": "The application event in its concrete forms serves to decouple triggering the different effects across the application",
+      "oneOf": [
+        {
+          "$ref": "#/schemas/goapi-task-returned"
+        },
+        {
+          "$ref": "#/schemas/goapi-task-processed"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "identity"
+      },
+      "properties": {
+        "identity": {
+          "description": "The event `identity` is broadcasted over the application event bus along with the event objects. The application events in its concrete forms serve to decouple triggering the different effects across the application."
+        }
+      }
+    },
+    "goapi-task-returned": {
+      "title": "[Application] GoAPI Task Returned Event",
+      "description": "The event meaning GoAPI task returned with some result. The result is defined by the event payload.",
+      "type": "object",
+      "properties": {
+        "identity": {
+          "type": "string",
+          "enum": ["goapi.task.returned"],
+          "x-enum-varnames": ["GOAPI_TASK_RETURNED"]
+        },
+        "payload": {
+          "required": ["prompt_uuid", "data"],
+          "type": "object",
+          "properties": {
+            "prompt_uuid": {
+              "$ref": "#/components/schemas/application-generic-uuid",
+              "description": "[Image Generation Prompt](/#/schemas/prompts-image-prompt) UUID"
+            },
+            "data": {
+              "$ref": "#/components/schemas/goapi-unified-task-result-data",
+              "description": "The [unified GoAPI task result data](/#/schemas/goapi-unified-task-result-data)"
+            }
+          }
+        }
+      },
+      "required": ["identity", "payload"]
+    },
+    "goapi-task-processed": {
+      "title": "[Application] GoAPI Task Processed Event",
+      "description": "The application event informing about the fact the images from GoAPI task are persisted",
+      "type": "object",
+      "properties": {
+        "identity": {
+          "type": "string",
+          "enum": ["goapi.task.processed"],
+          "x-enum-varnames": ["GOAPI_TASK_PROCESSED"]
+        },
+        "payload": {
+          "required": ["active_generation_tasks_counter", "prompt"],
+          "type": "object",
+          "properties": {
+            "active_generation_tasks_counter": {
+              "description": "The active Midjourney GoAPI tasks counter. Should be implemented based on the GoAPI [limits](https://github.com/WhereJuly/63-imagetron/blob/construct/backend/develop/packages/backend/.docs/midjourney-task-status-explanations.md).",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50
+            },
+            "prompt": {
+              "$ref": "#/components/schemas/prompts-image-prompt",
+              "description": "The [prompt data](/#/schemas/prompts-image-prompt) to send with an SSE"
+            }
+          }
+        }
+      },
+      "required": ["identity", "payload"]
+    }
+  },
+  "components": {
+    "$ref": "../../components/components.oas.json#/components"
+  }
+}

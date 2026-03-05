@@ -1,0 +1,65 @@
+{
+  "item": {
+    "title": "[Images] Image Item",
+    "description": "The single image generated with Midjourney commands. Either `variation` or `upscaled`.",
+    "type": "object",
+    "required": ["uuid", "midjourney_index", "prompt_uuid", "task_uuid", "name", "source_url", "url", "type", "is_persisted", "error_message", "is_locked", "timestamp"],
+    "properties": {
+      "uuid": {
+        "description": "The image UUID.",
+        "$ref": "#/components/schemas/application-generic-uuid"
+      },
+      "midjourney_index": {
+        "description": "The Midjourney image index (1-4).",
+        "type": "integer"
+      },
+      "prompt_uuid": {
+        "description": "The prompt UUID.",
+        "$ref": "#/components/schemas/application-generic-uuid"
+      },
+      "task_uuid": {
+        "description": "The task UUID.",
+        "$ref": "#/components/schemas/application-generic-uuid"
+      },
+      "name": {
+        "description": "The image name. See [design docs](https://github.com/WhereJuly/63-imagetron/blob/construct/backend/develop/packages/backend/implementation/.a%26cd/model/use-cases/images/save-variations-imagine/save-variations.models.md#images-location-and-naming).",
+        "type": "string"
+      },
+      "source_url": {
+        "description": "The original image URL on the GoAPI server. Just for reference.",
+        "type": "string",
+        "format": "uri"
+      },
+      "url": {
+        "description": "The pre-signed S3 location URL to access the image. Contains `null` by default or if `is_persisted == false`.",
+        "type": ["string", "null"],
+        "default": null
+      },
+      "type": {
+        "description": "The type of image. Either `variation`, `separated` or `upscaled`.",
+        "type": "string",
+        "enum": ["variation", "separated", "upscaled"],
+        "x-enum-varnames": ["Variation", "Separated", "Upscaled"]
+      },
+      "is_persisted": {
+        "description": "Whether the image is persisted or not.",
+        "type": "boolean"
+      },
+      "error_message": {
+        "description": "An error message if the image processing failed.",
+        "type": ["string", "null"]
+      },
+      "is_locked": {
+        "description": "Midjourney operations for an image are available within 1 hour after task completions as GoAPI [restricts](https://goapi.ai/docs/technical-questions#midjourney-api) it (1 hour is correct figure found in Dashboard.",
+        "type": "boolean"
+      },
+      "timestamp": {
+        "description": "Required to calculate time to lock on client",
+        "type": "number"
+      }
+    }
+  },
+  "components": {
+    "$ref": "../../components/components.oas.json#/components"
+  }
+}
