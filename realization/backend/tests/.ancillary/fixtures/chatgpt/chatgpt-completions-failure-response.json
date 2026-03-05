@@ -1,0 +1,18 @@
+{
+    "id": "chatcmpl-AvicbO6R8R4IW7kdqRiANaVnfJhWf",
+    "object": "chat.completion",
+    "created": 1738319585,
+    "model": "gpt-4o-mini-2024-07-18",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "I'm just a computer program, so I don't have feelings, but I'm here and ready to help you! How can I assist you today?",
+                "refusal": null
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ]
+}

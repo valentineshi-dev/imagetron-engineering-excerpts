@@ -1,0 +1,15 @@
+{
+    "code": 200,
+    "message": null,
+    "data": {
+        "task_type": "imagine",
+        "task_id": "550e8400-e29b-41d4-a716-446655440000",
+        "status": "pending"
+    },
+    "output": {
+        "task_progress": 5,
+        "message": "The GoAPI mocked message for pending task status",
+        "error_messages": ["mocked empty message"],
+        "actions": ["reroll", "upscale"]
+    }
+}
