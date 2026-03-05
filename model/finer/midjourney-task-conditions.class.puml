@@ -1,0 +1,112 @@
+@startuml Manage Midjourney Task Conditions
+
+skinparam linetype ortho
+
+interface IMidjourneyTaskConditions <<Domain>> #lightgreen {
+    + active_task_counter: number
+    + fast_mode_task_counter: number
+    + relaxed_mode_task_counter: number
+    + fast_mode_threshold_percent: number
+}
+
+class MidjourneyImageGenerationService <<Domain>> #gold {
+    + imagine(): ImageGenerationPromptEO [done]
+    + reroll(): ImageGenerationPromptEO
+    + variations(): ImageGenerationPromptEO
+    + upscale(): ImageGenerationPromptEO
+}
+
+class MidjourneyTaskConditionsVO <<Domain>> #lightgreen {
+    - active_task_counter: number
+    - fast_mode_task_counter: number
+    - relaxed_mode_task_counter: number
+    - fast_mode_threshold_percent: number
+
+    + get activeTaskCounter: ActiveTaskCounterVO
+    + get fastModeCounter: GenerationModeTaskCounterVO
+    + get relaxedModeCounter: GenerationModeTaskCounterVO
+
+    + constructor(conditions?: IMidjourneyTaskConditions): void
+    
+    + canAddTask(): boolean
+    + expectFastMode(): boolean
+}
+
+entity MidjourneyTaskConditionsEO <<Persistence.Entity>> #lightgreen implements IMidjourneyTaskConditions  {
+    + active_task_counter: number
+    + fast_mode_task_counter: number
+    + relaxed_mode_task_counter: number
+    + fast_mode_threshold_percent: number
+    
+    + resetGenerationModeTaskCounters(): void
+}
+
+note top of MidjourneyTaskConditionsEO
+    Manages persistence.
+end note
+
+class ActiveTaskCounterVO <<Domain>> #lightgreen {
+    + get value: number
+    
+    + increment(): number
+    + decrement(): number
+}
+
+class GenerationModeTaskCounterVO <<Domain>> #lightgreen {
+    + get value: number
+
+    + increment(): number
+    + reset(): number
+}
+
+class GoAPIHTTPAdapter <<Ports>> #gold {}
+
+class ORM <<Persistence>> {}
+
+note right of MidjourneyTaskConditionsEO::resetGenerationModeTaskCounters
+    Built into the `beforeUpdate` hook.
+    Automatically reset the counters 
+    at the start of each month.
+end note
+
+note left of MidjourneyTaskConditionsVO
+    Manages business logic.
+    
+    It is created: 
+    - either as null-object with the desired defaults
+    - or as actual data object from
+      MidjourneyTaskConditionsEO that in turn 
+      takes the data from the persistence;
+end note
+
+note right of MidjourneyTaskConditionsVO::expectFastMode
+    - Calculate the current Fast/Relaxed ratio.
+    - If Fast is below 
+      fast_mode_threshold_percent,
+      return true; otherwise false.
+end note
+
+note as N2
+    Synchronize on each other
+    to persist the state or
+    to enforce business logic.
+end note
+
+MidjourneyImageGenerationService --* GoAPIHTTPAdapter
+N2 .. MidjourneyTaskConditionsVO
+MidjourneyTaskConditionsEO .. N2
+
+ORM -- MidjourneyTaskConditionsEO
+MidjourneyImageGenerationService *-- MidjourneyTaskConditionsEO
+MidjourneyImageGenerationService *-- MidjourneyTaskConditionsVO
+
+MidjourneyTaskConditionsEO <-- MidjourneyTaskConditionsVO : takes state\nfrom persistence
+MidjourneyTaskConditionsEO --> MidjourneyTaskConditionsVO : takes state\nfrom memory
+
+IMidjourneyTaskConditions <-- MidjourneyTaskConditionsVO : takes as POJO
+
+MidjourneyTaskConditionsVO::activeTaskCounter *-- ActiveTaskCounterVO : created
+MidjourneyTaskConditionsVO::fastModeCounter *-- GenerationModeTaskCounterVO : created
+MidjourneyTaskConditionsVO::relaxedModeCounter *-- GenerationModeTaskCounterVO : created
+
+@enduml

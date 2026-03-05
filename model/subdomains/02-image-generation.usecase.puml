@@ -1,0 +1,67 @@
+@startuml Image Generation Mud Level Use Cases
+
+top to bottom direction
+
+title Image Generation Subdomain Mud Level Use Cases (only Backend)
+
+skinparam UseCaseBackgroundColor White
+skinparam LegendBackgroundColor White
+
+<style>
+node {
+    MaximumWidth 200
+}
+
+legend {
+    Padding 12
+    HorizontalAlignment left
+}
+
+diagram {
+  BackgroundColor White
+  RoundCorner 10
+}
+</style>
+
+legend right
+  1) planned / in planning (e.g. in requirements): white
+  2) on hold (hold, postponed, deprecating): gray
+  3) in design (or re-design): coral ([#coral]) 
+  4) in construction: yellow ([#gold]) 
+  5) constructed: green ([#lightgreen]) 
+  6) released: blue ([#application])
+endlegend
+
+note "blue color example" as N1 #application
+
+actor Artist as A
+rectangle "<<actor>>\nGoAPI" as Go
+
+package "Image Generation Subdomain" as IG {
+  usecase "Generate image versions" as UC1 #gold
+  usecase "View image versions" as UC2
+  usecase "Upscale selected image version" as UC3
+  usecase "View upscaled version" as UC4
+  usecase "[TBD later] CRUD image versions" as UC5
+  usecase "[TBD later] CRUD upscaled images" as UC6
+
+  ' Enforce order
+  UC1 -[hidden]-> UC2
+  UC2 -[hidden]-> UC3
+  UC3 -[hidden]-> UC4
+  UC4 -[hidden]-> UC5
+  UC5 -[hidden]-> UC6
+}
+
+A --> UC1 : asks
+A --> UC2 : asks
+A --> UC3 : asks
+A --> UC4
+A --> UC5
+A --> UC6
+
+Go --> UC1 : provides
+Go --> UC2 : provides
+Go --> UC3 : provides
+Go --> UC4
+@enduml

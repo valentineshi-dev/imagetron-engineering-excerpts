@@ -1,0 +1,94 @@
+@startuml Prompts Subdomain Mud Level Use Cases
+
+title Prompts Subdomain Mud Level Use Cases (only Backend)
+
+top to bottom direction
+
+skinparam UseCaseBackgroundColor White
+skinparam LegendBackgroundColor White
+
+<style>
+node {
+    MaximumWidth 200
+}
+
+legend {
+    Padding 12
+    HorizontalAlignment left
+}
+
+diagram {
+  BackgroundColor White
+  RoundCorner 10
+}
+</style>
+
+legend right
+  1) planned / in planning (e.g. in requirements): white
+  2) on hold (hold, postponed, deprecating): gray
+  3) in design (or re-design): coral ([#coral]) 
+  4) in construction: yellow ([#gold]) 
+  5) constructed: green ([#lightgreen]) 
+  6) released: blue ([#application])
+endlegend
+
+note "blue color example" as N1 #application
+
+actor Artist as A
+rectangle ChatGPT <<actor>> as C
+
+package "Prompts Subdomain" as PS {
+  usecase "Obtain Image Prompt Subjects" as UC1 #lightgreen
+  usecase "Obtain Image Prompts" as UC2 #lightgreen
+  usecase "CRUD Image Prompts Subjects" as UC2_1 #lightgreen
+  usecase "CRUD Image Prompts" as UC3 #lightgreen
+  usecase "Manage Image Prompt Manual Statuses" as UC4 #lightgreen
+  usecase "Send Image Prompt for Generation" as UC5 #gold
+  usecase "Review Prompts List with Statuses" as UC6 #lightgreen
+  usecase "Obtain different Prompt Title" as UC7 #lightgreen
+
+  ' Enforce order
+  UC1 -[hidden]-> UC2
+  UC2 -[hidden]-> UC2_1
+  UC2_1 -[hidden]-> UC3
+  UC3 -[hidden]-> UC4
+  UC4 -[hidden]-> UC5
+  UC5 -[hidden]-> UC6
+  UC6 -[hidden]-> UC7
+}
+
+rectangle "CRUD Image Prompts Subjects" as UC2_1_0  {
+  usecase "Retrieve prompts Subjects Chat history" as UC2_1_1 #lightgreen
+  usecase "Remove prompts Subjects Chat history" as UC2_1_2 #lightgreen
+
+  ' Enforce order
+  UC2_1_1-[hidden]-> UC2_1_2
+}
+
+rectangle "CRUD Image Prompts" as UC3_1_0 {
+  usecase "Retrieve prompts list" as UC3_1_1 #lightgreen
+  usecase "Remove the prompt" as UC3_1_2 #lightgreen
+
+  ' Enforce order
+  UC3_1_1-[hidden]-> UC3_1_2
+}
+
+' Enforce order
+UC2_1_0-[hidden]-> UC3_1_0
+
+A --> UC1 : asks
+A --> UC2 : asks
+A --> UC2_1
+A --> UC3
+A --> UC4
+A --> UC5
+A --> UC6
+A --> UC7 : asks
+
+C --> UC1 : provides
+C --> UC2 : provides
+C --> UC7 : provides
+
+UC2_1 <|-right- UC2_1_0
+UC3 <|-right- UC3_1_0
+@enduml

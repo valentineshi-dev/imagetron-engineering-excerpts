@@ -1,0 +1,50 @@
+@startuml Imagetron C4 Container Diagram
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Imagetron C4 Container Diagram
+
+Enterprise_Boundary(b0, "Imagetron System") {
+    Person(artist, "Artist", "Uses the system to generate and manage images.")
+
+    System_Boundary(Imagetron, "Imagetron") {
+        Container_Boundary(ImagetronApps, "Imagetron Applications") {
+            Container(Web, "Web", "Frontend Application", "Generates prompts and interfaces with the artist and backend.")
+            Container(Backend, "Backend", "REST API", "Handles image generation, storage, and interactions with external systems.")
+        }
+
+        Container_Boundary(ArtistComputer, "Artist Computer") {
+            Container(BrowserExt, "Browser Extension", "Browser Extension", "Automates Adobe Stock form submission.")
+            Container(Rclone, "Rclone", "Rclone", "Provides OS access to S3.")
+        }
+
+        Container_Boundary(Storage, "Storage Provider") {
+            Container(S3, "S3 Storage", "S3", "Stores selected images.")
+        }
+    }
+}
+
+Enterprise_Boundary(b1, "External") {
+    Container_Boundary(apis, "APIs") {
+        System_Ext(ChatGPT, "ChatGPT", "Generates Midjourney prompts with the Web.")
+        System_Ext(GoAPI, "GoAPI", "Handles communication with Midjourney via Backend.")
+    }
+
+    Container_Boundary(external_applications, "External Applications") {
+        System_Ext(AdobeStock, "Adobe Stock", "Platform for selling and licensing stock images.")
+        System_Ext(Midjourney, "Midjourney", "AI-powered image generation.")
+    }
+}
+
+Rel(artist, Web, "Interacts to generate prompts and view images")
+Rel(Web, Backend, "Controls prompts and image management")
+Rel(Web, Rclone, "Transfers images from S3 Storage")
+Rel(Backend, ChatGPT, "Generates prompts")
+Rel(Backend, GoAPI, "Sends prompts and receives generated images")
+Rel(Backend, S3, "Stores selected images")
+Rel(GoAPI, Midjourney, "Manages image generation")
+Rel(BrowserExt, Web, "Receives inputs via clipboard buffer")
+Rel(BrowserExt, AdobeStock, "Fills Adobe Stock forms with input")
+Rel(Rclone, S3, "Provides S3 as network drive to browser")
+
+@enduml

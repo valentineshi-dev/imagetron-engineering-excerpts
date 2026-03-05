@@ -1,0 +1,28 @@
+@startuml SSE Organization
+
+actor User
+control "Frontend\n(Axios + TypeScript)" as Frontend
+control "Backend\n(Fastify + TypeScript)" as Backend
+boundary "Event Bus\n(EventEmitter3)" as EventBus
+participant "System" as System
+
+== Establishing Connection ==
+User -> Frontend: Initiate SSE connection
+Frontend -> Backend: HTTP GET /events (SSE endpoint)
+Backend -> Frontend: Set headers:\nContent-Type: text/event-stream\nCache-Control: no-cache\nConnection: keep-alive
+Backend -> Frontend: Send initial message:\ndata: Connected\n\n
+Frontend -> User: Connection established
+
+== Sending Events ==
+System -> EventBus: Fire event with data
+EventBus -> Backend: Emit event with data
+Backend -> Frontend: Send event over SSE:\ndata: { "message": "Hello, world!" }\n\n
+Frontend -> User: Display received data
+
+== Handling Disconnection ==
+User -> Frontend: Close SSE connection
+Frontend -> Backend: Close HTTP connection
+Backend -> EventBus: Stop listening for events
+Backend -> Frontend: Clean up resources
+
+@enduml

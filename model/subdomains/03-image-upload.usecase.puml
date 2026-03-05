@@ -1,0 +1,53 @@
+@startuml Image Upload Subdomain Image Upload Sea Level Use Cases
+
+top to bottom direction
+
+title Image Upload Sea Level Use Cases (only Backend)
+
+skinparam UseCaseBackgroundColor White
+skinparam LegendBackgroundColor White
+
+<style>
+node {
+    MaximumWidth 200
+}
+
+legend {
+    Padding 12
+    HorizontalAlignment left
+}
+
+diagram {
+  BackgroundColor White
+  RoundCorner 10
+}
+</style>
+
+legend right
+  1) planned / in planning (e.g. in requirements): white
+  2) on hold (hold, postponed, deprecating): gray
+  3) in design (or re-design): coral ([#coral]) 
+  4) in construction: yellow ([#gold]) 
+  5) constructed: green ([#lightgreen]) 
+  6) released: blue ([#application])
+endlegend
+
+actor Artist as A
+
+rectangle "Adobe Stock" <<system>> as AS
+
+package "Image Upload Subdomain" as IU {
+  usecase "Upload image" as UC1
+  usecase "Fill in title & keywords" as UC2
+  usecase "[TBC later] What else" as UC3
+
+  ' Enforce order
+  UC1 -[hidden]-> UC2
+  UC2 -[hidden]-> UC3
+}
+
+A --> UC1 : uploads
+A --> UC2 : fills
+A --> UC3
+AS <- IU
+@enduml

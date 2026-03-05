@@ -1,0 +1,91 @@
+@startuml Midjourney Task Entity Class Diagram
+
+skinparam linetype ortho
+
+
+title Midjourney Task Entity Class Diagram
+
+package Domain {
+
+    interface IMidjourneyTask #gold {
+        + prompt: ImageGenerationPromptEO
+        
+        + goapi_task_uuid: string
+        + [TBC] parent_goapi_task_uuid: string
+
+        // Inputs
+        + command: EMidjourneyCommand
+
+        // Outputs
+        + task_status: EGoAPITaskStatus
+        + task_progress: number
+        + [TBC] actions: string[]
+        + goapi_message: string
+        + goapi_error_messages: string
+
+        + created_at: Date | null
+        + updated_at: Date | null
+    }
+
+    enum EMidjourneyCommand #lightgreen {
+        IMAGINE
+        REROLL
+        VARIATIONS
+        UPSCALE
+    }
+
+    enum EImageGenerationMode #lightgreen {
+        FAST
+        RELAXED
+    }
+    
+    enum EGoAPITaskStatus #lightgreen {
+        PENDING
+        PROCESSING
+        STAGED
+        COMPLETED
+        FAILED
+    }    
+
+    IMidjourneyTask::task_command *-right- EMidjourneyCommand
+    IMidjourneyTask::image_generation_mode *-right- EImageGenerationMode
+    IMidjourneyTask::task_status *-right- EGoAPITaskStatus
+    
+}
+
+note top of Domain 
+    This design version is from implemented
+    `imagine` endpoint.
+    
+    Will see if I have to change MidjourneyTaskEO 
+    content when the webhooks or other commands'
+    endpoints get implemented.
+end note
+
+Domain -[hidden]> Persistence 
+
+package Persistence {
+
+    entity MidjourneyTaskEO <<Entity>> #gold implements Domain.IMidjourneyTask {
+        + prompt: ImageGenerationPromptEO
+        
+        + goapi_task_uuid: string
+        + [TBC] parent_goapi_task_uuid: string
+
+        // Inputs
+        + command: EMidjourneyCommand
+
+        // Outputs
+        + task_status: EGoAPITaskStatus
+        + task_progress: number
+        + [TBC] actions: string[]
+        + goapi_message: string
+        + goapi_error_messages: string
+
+        + created_at: Date | null
+        + updated_at: Date | null
+    }
+
+}
+
+@enduml

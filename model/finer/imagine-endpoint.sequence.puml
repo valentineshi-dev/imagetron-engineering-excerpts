@@ -1,0 +1,173 @@
+@startuml Sequence Diagram
+
+title POST /images/prompt/{uuid}/midjourney/imagine
+
+participant "Images HTTP Adapter" as ImagesAdapter #gold
+database "ORM" as ORM
+participant "GoAPIAPIFacade" as GoAPIFacade #gold
+
+participant GoAPIImagineTaskPayloadVO #lightgreen
+participant ImageGenerationPromptEO #lightgreen
+participant MidjourneyTaskEO #coral
+participant MidjourneyImageGenerationService #gold
+
+note over ImagesAdapter
+    .imagine
+end note
+
+note over GoAPIFacade
+    GoAPIAPIFacade
+end note
+
+[-> ImagesAdapter : Image prompt UUID
+activate ImagesAdapter
+
+== Initial Checks ==
+
+create MidjourneyImageGenerationService
+ImagesAdapter -> MidjourneyImageGenerationService : container.resolve
+ImagesAdapter -> MidjourneyImageGenerationService : call imagine()
+activate MidjourneyImageGenerationService
+
+/' Group '/
+group Prompt exists? [not null]
+
+    MidjourneyImageGenerationService -> ORM : ImageGenerationPromptEO?
+    activate ORM
+    ORM --> MidjourneyImageGenerationService : ImageGenerationPromptEO | null
+    deactivate ORM
+
+    activate MidjourneyImageGenerationService
+    MidjourneyImageGenerationService --> MidjourneyImageGenerationService : null?
+    MidjourneyImageGenerationService --> ImagesAdapter : Not found
+    activate ImagesAdapter
+    [<-ImagesAdapter : 404
+    destroy ImagesAdapter
+    destroy MidjourneyImageGenerationService
+
+    create ImageGenerationPromptEO
+    MidjourneyImageGenerationService o-> ImageGenerationPromptEO : Found
+
+end
+
+group Valid transition? [target GenerationAwait]
+    MidjourneyImageGenerationService -> ImageGenerationPromptEO : propmpt.status.isValidTransition()?
+    activate MidjourneyImageGenerationService
+    MidjourneyImageGenerationService --> ImagesAdapter : No
+    destroy MidjourneyImageGenerationService
+    [<-ImagesAdapter : 409 INVALID_PROMPT_STATUS_TRANSITION
+end
+
+/' Group '/
+group Command allowed [imagine]
+
+    note over MidjourneyImageGenerationService
+        For `new` status the MidjourneyTaskEO does not exist.
+        We can check with `.isCommandAllowed('imagine')` method
+        if `midourney_commands.allowed_root==imagine`
+    end note
+
+    MidjourneyImageGenerationService --> MidjourneyImageGenerationService : isCommandAllowed('imagine')?
+    activate MidjourneyImageGenerationService
+    MidjourneyImageGenerationService --> ImagesAdapter : Not allowed
+    destroy MidjourneyImageGenerationService
+
+    activate ImagesAdapter
+    [<-ImagesAdapter : 409 MIDJOURNEY_COMMAND_NOT_ALLOWED
+    destroy ImagesAdapter
+
+end
+
+note right of MidjourneyImageGenerationService #lightgreen
+    + canAddTask(): boolean
+    + expectFastMode(): boolean
+    See [[https://github.com/WhereJuly/63-imagetron/blob/construct/backend/develop/packages/backend/implementation/.a&cd/model/models.md#midjourney-tasks-conditions-class-diagram model]]
+end note
+
+/' Group '/
+group Can we add task?
+
+    activate MidjourneyImageGenerationService
+    MidjourneyImageGenerationService -> ORM : MidourneyTaskConditionsEO?
+    activate ORM
+    ORM --> MidjourneyImageGenerationService : MidourneyTaskConditionsEO
+    note over MidjourneyImageGenerationService #lightgreen: MidjourneyTaskConditionsVO
+    deactivate ORM
+
+    activate MidjourneyImageGenerationService
+    MidjourneyImageGenerationService --> MidjourneyImageGenerationService : MidjourneyTaskConditionsVO\n.canAddTask()?
+    MidjourneyImageGenerationService --> ImagesAdapter : No
+    destroy MidjourneyImageGenerationService
+
+    activate ImagesAdapter
+    [<-ImagesAdapter : 409 ACTIVE_TASK_QUEUE_IS_FULL
+    destroy ImagesAdapter
+
+end
+
+== Request Image Versions ==
+
+/' Group '/
+group Prepare Payload
+
+    note over MidjourneyImageGenerationService #lightgreen: MidjourneyTaskConditionsVO
+
+    MidjourneyImageGenerationService -> MidjourneyImageGenerationService : isFast = MidjourneyTaskConditionsVO\n.expectFastMode()?
+    activate MidjourneyImageGenerationService
+
+    MidjourneyImageGenerationService -> MidjourneyImageGenerationService : process_mode = isFast ? fast : relaxed
+
+    create GoAPIImagineTaskPayloadVO
+    MidjourneyImageGenerationService o-> GoAPIImagineTaskPayloadVO : create(process_mode: fast | relaxed)
+    deactivate MidjourneyImageGenerationService
+
+end
+
+/' Group '/
+group Send Request [error]
+
+    MidjourneyImageGenerationService -> GoAPIFacade : Task Payload
+
+    activate GoAPIFacade
+    GoAPIFacade --> MidjourneyImageGenerationService : Code >=400
+    MidjourneyImageGenerationService --> ImagesAdapter
+    activate ImagesAdapter
+    [<-ImagesAdapter : 424
+    destroy ImagesAdapter
+
+    else Success
+
+    GoAPIFacade --> MidjourneyImageGenerationService : 200 Task Response Payload
+    deactivate GoAPIFacade
+
+end
+
+group Update Persistence [Transaction]
+
+    create MidjourneyTaskEO
+    MidjourneyImageGenerationService o-> MidjourneyTaskEO : New
+
+    MidjourneyImageGenerationService o-> MidjourneyTaskEO : Update with\nTask Response Payload
+
+    destroy GoAPIImagineTaskPayloadVO
+
+    note over MidjourneyImageGenerationService #lightgreen: MidjourneyTaskConditionsVO
+    MidjourneyImageGenerationService -> MidjourneyImageGenerationService : increment active counter
+    MidjourneyImageGenerationService -> MidjourneyImageGenerationService : increment respective mode counter
+
+    MidjourneyImageGenerationService --> ImageGenerationPromptEO : Update latest command, allowed command\nstatus, else?
+    MidjourneyImageGenerationService --> ORM : save MidjourneyTaskConditionsEO
+    MidjourneyImageGenerationService --> ORM : save ImageGenerationPromptEO
+    MidjourneyImageGenerationService -> ORM : save MidjourneyTaskEO
+
+end
+
+MidjourneyImageGenerationService -> ImagesAdapter : ImageGenerationPromptEO
+
+destroy MidjourneyTaskEO
+destroy ImageGenerationPromptEO
+
+[<-ImagesAdapter : 200 ImageGenerationPromptEO
+deactivate ImagesAdapter
+
+@enduml

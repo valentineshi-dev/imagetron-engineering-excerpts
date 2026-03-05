@@ -1,0 +1,76 @@
+@startuml TrendBridge AVS: Scraping Sea Level Use Cases
+
+top to bottom direction
+
+!$title = "TrendBridge AVS: Scraping Sea Level Use Cases"
+
+title $title
+
+skinparam actorStyle awesome
+skinparam UseCaseBackgroundColor White
+skinparam LegendBackgroundColor White
+
+<style>
+node {
+    MaximumWidth 200
+}
+
+legend {
+    Padding 12
+    HorizontalAlignment left
+}
+
+diagram {
+    BackgroundColor White
+    RoundCorner 10
+}
+</style>
+
+legend left
+Legend:
+  1) planned / in planning (e.g. in requirements): white
+  2) on hold (hold, postponed, deprecating): gray
+  3) in design (or re-design): coral ([#coral]) 
+  4) in construction: yellow ([#gold]) 
+  5) constructed: green ([#lightgreen]) 
+  6) released: blue ([#application])
+endlegend
+
+' note "blue color example" as N1 #application
+
+actor Engineer
+actor Robot
+
+rectangle "browse.ai\nRobot" as browse_ai
+rectangle "make.com" as make_com
+rectangle "neon.com" as neon_com
+
+rectangle "Scrape Workflow" as Workflow {
+    usecase "Configure\nScraper" as UC1
+    usecase "Scrape\nBestsellers" as UC2
+    usecase "Basic\nTransform" as UC3
+    usecase "Pipe\nto Postgres" as UC4
+}
+
+/'Workflow .[hidden]. N1'/
+
+' Explicitly control use case order by positioning
+UC2 -[hidden]-> UC3
+UC3 -[hidden]-> UC4
+
+Engineer --> UC1
+/'Robot --> UC2'/
+
+UC1 --> browse_ai
+browse_ai --> UC2
+UC2 --> make_com
+make_com --> UC3
+UC3 --> UC4
+UC4 -right-> neon_com
+
+' ChatGPT <-- UC1
+' UC2 --> MidJourney
+' UC5 --> MidJourney
+' UC6 -right-> AdobeStock
+
+@enduml

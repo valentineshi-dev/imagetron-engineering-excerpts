@@ -1,0 +1,79 @@
+@startuml Image Generation Prompt States (GoAPI / Midjourney)
+
+skinparam defaultTextAlignment center
+
+/'hide empty description'/
+
+note as N1
+    ACTUAL SINCE 2025-02-20
+end note
+
+note right of Uploading
+    Artist sets the state manually
+    for further actions. 
+    Same for `finished`
+end note
+
+note right of GenerationAwait
+    Awaiting generation from
+    multiple commands: /imagine,
+    /reroll, /variations, /upscale
+end note
+
+note right of regenerate_join_state
+    "More versions" commands
+    /reroll, /variations,
+    or /upscale command
+end note
+
+state "new" as New
+state "finished" as Finished
+state "generation:await" as GenerationAwait
+state "has:versions" as HasVersions
+state "generation:failure" as GenerationFailure #FFCCCC
+state "has:upscales" as HasUpscales
+state "uploading" as Uploading
+
+Uploading : manual
+Finished : manual
+
+GenerationAwait -[hidden]-> fork_state  
+
+state fork_state <<fork>>
+state join_state <<join>>
+state regenerate_join_state <<join>>
+
+/' --- Transitions'/
+
+[*] --> New : System\ncreated\nthe prompt
+
+New --> GenerationAwait : Artist:\n'/imagine'
+New --> Finished : Artist:\n'Finish'
+
+GenerationAwait --> fork_state : GoAPI reply
+
+fork_state --> GenerationFailure
+fork_state --> HasVersions
+fork_state --> HasUpscales
+
+GenerationFailure --> join_state
+HasVersions --> join_state
+HasUpscales --> join_state
+
+join_state --> Finished : Artist:\n'Finish'
+
+GenerationFailure -up[#red,dashed]-> regenerate_join_state
+HasVersions -up[#red,dashed]-> regenerate_join_state
+HasUpscales -up[#red,dashed]-> regenerate_join_state
+Uploading -up[#red,dashed]-> regenerate_join_state
+
+regenerate_join_state -up[#red,dashed]-> GenerationAwait : Artist:\n/command
+
+HasUpscales --> Uploading : Artist:\n'Upload'
+
+Uploading --> Finished : Artist:\n'Finish'
+
+Finished --> [*] : System:\n'Delete'\nafter timeout
+Finished --> [*] : Artist:\n'Delete'
+
+@enduml
