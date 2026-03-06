@@ -9,7 +9,7 @@
 >
 > See the detailed review in the [Imagetron case study](https://valentineshi.dev/content/deliverables/K3aT7UX_RCC8ZO_fy9VinQ/ai-powered-image-generation-publication-system-imagetron) on my website.
 
-## System characteristics
+## System Characteristics
 
 - Contract-first API (OpenAPI 3.1), enforced across all services.
 - Async orchestration (webhook + SSE).
@@ -17,6 +17,16 @@
 - Idempotent job processing by design.
 - Containerized deployment (Docker, Swarm, Traefik)
 - 170+ automated tests, coverage > 95%.
+
+## Technology Stack
+
+- Backend: Node.js, TypeScript, Fastify, MikroORM
+- API Contract: OpenAPI 3.1, JSON Schema, AJV
+- Persistence: SQLite, S3
+- Async Workflow: Webhook integration, Server-Sent Events
+- Testing: Vitest
+- Delivery & Infrastructure: Docker, Docker Swarm, Traefik, CI/CD
+- Observability: Sentry, Loki, Netdata
 
 <details>
 
