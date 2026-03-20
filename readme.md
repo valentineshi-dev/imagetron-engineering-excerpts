@@ -16,7 +16,7 @@
 - Explicit domain modeling (C4, UML/PlantUML).
 - Idempotent job processing by design.
 - Containerized deployment (Docker, Swarm, Traefik)
-- 170+ automated tests, coverage > 95%.
+- 150+ automated tests, coverage > 90%.
 
 ## Technology Stack
 
@@ -24,6 +24,7 @@
 - API Contract: OpenAPI 3.1, JSON Schema, AJV
 - Persistence: SQLite, S3
 - Async Workflow: Webhook integration, Server-Sent Events
+- AI: OpenAI REST API
 - Testing: Vitest
 - Delivery & Infrastructure: Docker, Docker Swarm, Traefik, CI/CD
 - Observability: Sentry, Loki, Netdata
